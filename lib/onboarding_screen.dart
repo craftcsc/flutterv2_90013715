@@ -1,4 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final selectedInterestsProvider = NotifierProvider<SelectedInterestsNotifier, Set<String>>(() {
+  return SelectedInterestsNotifier();
+});
+
+class SelectedInterestsNotifier extends Notifier<Set<String>> {
+  @override
+  Set<String> build() {
+    return {
+      'User Interface',
+      'User Research',
+      'Strategy',
+      'Design Systems',
+    };
+  }
+
+  void toggle(String interest) {
+    if (state.contains(interest)) {
+      state = {
+        for (final item in state)
+          if (item != interest) item
+      };
+    } else {
+      state = {...state, interest};
+    }
+  }
+}
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -147,15 +175,10 @@ class _IntroStep extends StatelessWidget {
   }
 }
 
-class _InterestsStep extends StatefulWidget {
+class _InterestsStep extends ConsumerWidget {
   const _InterestsStep();
 
-  @override
-  State<_InterestsStep> createState() => _InterestsStepState();
-}
-
-class _InterestsStepState extends State<_InterestsStep> {
-  final List<String> _interests = [
+  final List<String> _interests = const [
     'User Interface',
     'User Experience',
     'User Research',
@@ -166,15 +189,9 @@ class _InterestsStepState extends State<_InterestsStep> {
     'Design Systems',
   ];
 
-  final Set<String> _selectedInterests = {
-    'User Interface',
-    'User Research',
-    'Strategy',
-    'Design Systems',
-  };
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedInterests = ref.watch(selectedInterestsProvider);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Column(
@@ -226,16 +243,10 @@ class _InterestsStepState extends State<_InterestsStep> {
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final interest = _interests[index];
-                final isSelected = _selectedInterests.contains(interest);
+                final isSelected = selectedInterests.contains(interest);
                 return GestureDetector(
                   onTap: () {
-                    setState(() {
-                      if (isSelected) {
-                        _selectedInterests.remove(interest);
-                      } else {
-                        _selectedInterests.add(interest);
-                      }
-                    });
+                    ref.read(selectedInterestsProvider.notifier).toggle(interest);
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(

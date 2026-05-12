@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'features/shop/presentation/screens/catalog_screen.dart';
 
 final selectedInterestsProvider = NotifierProvider<SelectedInterestsNotifier, Set<String>>(() {
   return SelectedInterestsNotifier();
@@ -73,7 +74,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         curve: Curves.easeInOut,
                       );
                     } else {
-                      // Navigate to home or next flow
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CatalogScreen()),
+                      );
                     }
                   },
                   style: ElevatedButton.styleFrom(

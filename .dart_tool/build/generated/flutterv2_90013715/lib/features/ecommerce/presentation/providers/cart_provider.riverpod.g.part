@@ -1,0 +1,39 @@
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+String _$cartTotalAmountHash() => r'0a570e72250667fb1088258bf6114b157c08be05';
+
+/// See also [cartTotalAmount].
+@ProviderFor(cartTotalAmount)
+final cartTotalAmountProvider = AutoDisposeProvider<double>.internal(
+  cartTotalAmount,
+  name: r'cartTotalAmountProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$cartTotalAmountHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef CartTotalAmountRef = AutoDisposeProviderRef<double>;
+String _$cartControllerHash() => r'fbaac899a540d546e04aa38e0e629141bf09be8d';
+
+/// See also [CartController].
+@ProviderFor(CartController)
+final cartControllerProvider =
+    AutoDisposeAsyncNotifierProvider<CartController, List<CartItem>>.internal(
+      CartController.new,
+      name: r'cartControllerProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$cartControllerHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$CartController = AutoDisposeAsyncNotifier<List<CartItem>>;
+// ignore_for_file: type=lint
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -1,0 +1,13 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'user_interest.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$UserInterestImpl _$$UserInterestImplFromJson(Map<String, dynamic> json) =>
+    _$UserInterestImpl(id: json['id'] as String, name: json['name'] as String);
+
+Map<String, dynamic> _$$UserInterestImplToJson(_$UserInterestImpl instance) =>
+    <String, dynamic>{'id': instance.id, 'name': instance.name};

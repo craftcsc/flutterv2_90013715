@@ -1,28 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'onboarding_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'core/router/app_router.dart';
+import 'core/theme/app_theme.dart';
+import 'core/services/shared_preferences_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  
   runApp(
-    const ProviderScope(
-      child: MyApp(),
+    ProviderScope(
+      overrides: [
+        sharedPreferencesServiceProvider.overrideWithValue(SharedPreferencesService(prefs)),
+      ],
+      child: const MyApp(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Onboarding Demo',
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+
+    return MaterialApp.router(
+      title: 'Flutter E-commerce Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF007AFF)),
-        useMaterial3: true,
-      ),
-      home: const OnboardingScreen(),
+      theme: AppTheme.lightTheme,
+      routerConfig: router,
     );
   }
 }

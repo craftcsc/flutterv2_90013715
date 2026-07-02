@@ -88,9 +88,10 @@ class HomeScreen extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: const Color(0xFFE9F2FF),
                     borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.image_outlined, size: 64, color: Color(0xFFB0CFFF)),
+                    image: const DecorationImage(
+                      image: NetworkImage('https://picsum.photos/800/600?random=2'),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -126,8 +127,11 @@ class HomeScreen extends ConsumerWidget {
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFF0F4F8),
                                   borderRadius: BorderRadius.circular(12),
+                                  image: DecorationImage(
+                                    image: NetworkImage(product.imageUrl),
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                                child: const Center(child: Icon(Icons.image_outlined, color: Colors.grey)),
                               ),
                               const SizedBox(height: 8),
                               Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w500)),

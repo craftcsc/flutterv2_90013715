@@ -142,13 +142,6 @@ class DetailScreen extends ConsumerWidget {
               fit: BoxFit.cover,
             ),
           ),
-          child: const Center(
-            child: Icon(
-              Icons.image_outlined,
-              size: 80,
-              color: Color(0xFFB0CFFF),
-            ),
-          ),
         ),
         const SizedBox(height: 12),
         Row(

@@ -58,8 +58,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                       Container(
                         height: 300,
                         width: double.infinity,
-                        color: const Color(0xFFE9F2FF),
-                        child: const Center(child: Icon(Icons.image_outlined, size: 100, color: Color(0xFFB0CFFF))),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE9F2FF),
+                          image: DecorationImage(
+                            image: NetworkImage(product.imageUrl),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(24.0),

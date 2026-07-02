@@ -24,7 +24,7 @@ class SharedPreferencesService {
 
   // ── Product cache ────────────────────────────────────────────────────────────
   /// Key used to store the JSON-encoded list of products.
-  static const _cachedProductsKey = 'cachedProducts';
+  static const _cachedProductsKey = 'cachedProducts_v2';
 
   /// Returns the raw JSON string of cached products, or null if not cached.
   String? get cachedProductsJson => _prefs.getString(_cachedProductsKey);

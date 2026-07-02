@@ -49,8 +49,11 @@ class CartScreen extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: const Color(0xFFE9F2FF),
                             borderRadius: BorderRadius.circular(12),
+                            image: DecorationImage(
+                              image: NetworkImage(item.product.imageUrl),
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                          child: const Icon(Icons.image_outlined, color: Color(0xFFB0CFFF)),
                         ),
                         const SizedBox(width: 16),
                         Expanded(

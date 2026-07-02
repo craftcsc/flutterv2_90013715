@@ -49,12 +49,6 @@ class BagScreen extends ConsumerWidget {
                                 fit: BoxFit.cover,
                               ),
                             ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.image_outlined,
-                                color: Color(0xFFB0CFFF),
-                              ),
-                            ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(

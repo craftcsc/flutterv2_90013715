@@ -1,17 +1,12 @@
 # Decisiones Técnicas — flutterv2_90013715
 
-## Contexto
-
-Este documento registra las decisiones de arquitectura y tecnología adoptadas en el proyecto Flutter de e-commerce. Sirve como referencia para el equipo de desarrollo y como entregable de la HU 3.1.
-
----
 
 ## 1. Arquitectura por Features (Feature-First)
 
 **Decisión:** Organizar el código bajo `lib/features/<nombre_feature>/` con subdivisión interna en capas `data/`, `domain/` y `presentation/`.
 
 **Razón:**
-- Permite que diferentes miembros del equipo trabajen en features distintas sin conflictos de merge frecuentes.
+- Permite que el equipo trabaje en features distintas sin conflictos de merge frecuentes.
 - Escala mejor que una organización por tipo de archivo (`screens/`, `models/`, `repos/`) cuando el proyecto crece.
 - Facilita la eliminación de una feature completa sin tocar otras partes del sistema.
 

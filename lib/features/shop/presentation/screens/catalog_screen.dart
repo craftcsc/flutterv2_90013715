@@ -111,12 +111,9 @@ class CatalogScreen extends ConsumerWidget {
           decoration: BoxDecoration(
             color: const Color(0xFFE9F2FF),
             borderRadius: BorderRadius.circular(24),
-          ),
-          child: const Center(
-            child: Icon(
-              Icons.image_outlined,
-              size: 60,
-              color: Color(0xFFB0CFFF),
+            image: const DecorationImage(
+              image: NetworkImage('https://picsum.photos/800/600?random=3'),
+              fit: BoxFit.cover,
             ),
           ),
         ),

@@ -9,10 +9,10 @@ part 'mock_product_repository.g.dart';
 
 /// Raw mock product data (source-of-truth when cache is empty).
 const _mockProductsJson = '''[
-  {"id":"1","name":"Amazing T-shirt","price":12.0,"imageUrl":"https://via.placeholder.com/300x400/E9F2FF/007AFF?text=T-shirt","availableSizes":["XS","S","M","L","XL"],"availableColors":["0xFF000000","0xFF808080","0xFFE0E0E0"]},
-  {"id":"2","name":"Fabulous Pants","price":15.0,"imageUrl":"https://via.placeholder.com/300x400/E9F2FF/007AFF?text=Pants","availableSizes":["S","M","L"],"availableColors":["0xFF007AFF","0xFF000000"]},
-  {"id":"3","name":"Spectacular Dress","price":20.0,"imageUrl":"https://via.placeholder.com/300x400/E9F2FF/007AFF?text=Dress","availableSizes":["S","M","L"],"availableColors":["0xFFFFD700","0xFFFF0000"]},
-  {"id":"4","name":"Stunning Jacket","price":18.0,"imageUrl":"https://via.placeholder.com/300x400/E9F2FF/007AFF?text=Jacket","availableSizes":["M","L","XL"],"availableColors":["0xFF0000FF","0xFF000000"]}
+  {"id":"1","name":"Amazing T-shirt","price":12.0,"imageUrl":"https://picsum.photos/300/400?random=21","availableSizes":["XS","S","M","L","XL"],"availableColors":["0xFF000000","0xFF808080","0xFFE0E0E0"]},
+  {"id":"2","name":"Fabulous Pants","price":15.0,"imageUrl":"https://picsum.photos/300/400?random=22","availableSizes":["S","M","L"],"availableColors":["0xFF007AFF","0xFF000000"]},
+  {"id":"3","name":"Spectacular Dress","price":20.0,"imageUrl":"https://picsum.photos/300/400?random=23","availableSizes":["S","M","L"],"availableColors":["0xFFFFD700","0xFFFF0000"]},
+  {"id":"4","name":"Stunning Jacket","price":18.0,"imageUrl":"https://picsum.photos/300/400?random=24","availableSizes":["M","L","XL"],"availableColors":["0xFF0000FF","0xFF000000"]}
 ]''';
 
 List<Product> _decodeProducts(String json) {

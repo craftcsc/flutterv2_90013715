@@ -92,9 +92,10 @@ class _IntroStep extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFFE9F2FF),
               borderRadius: BorderRadius.circular(24),
-            ),
-            child: const Center(
-              child: Icon(Icons.image_outlined, size: 80, color: Color(0xFFB0CFFF)),
+              image: const DecorationImage(
+                image: NetworkImage('https://picsum.photos/800/600?random=1'),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
         ),

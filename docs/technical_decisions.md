@@ -126,26 +126,7 @@ lib/
 - Los archivos `.arb` son el estándar de la industria para strings localizados.
 - La generación automática (`AppLocalizations`) evita strings hardcodeados y facilita la adición de nuevos idiomas.
 
----
 
-## 8. Herramienta de Build: build_runner
-
-**Paquete:** `build_runner`
-
-**Uso:** Generar código para Riverpod, Freezed y json_serializable.
-
-```bash
-# Generar una vez
-flutter pub run build_runner build --delete-conflicting-outputs
-
-# Modo watch (desarrollo continuo)
-flutter pub run build_runner watch --delete-conflicting-outputs
-
-# Generar localización
-flutter gen-l10n
-```
-
----
 
 ## Diagrama de capas
 

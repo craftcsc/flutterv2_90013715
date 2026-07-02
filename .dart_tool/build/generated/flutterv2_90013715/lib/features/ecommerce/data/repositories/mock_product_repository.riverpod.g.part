@@ -2,7 +2,7 @@
 // RiverpodGenerator
 // **************************************************************************
 
-String _$productRepositoryHash() => r'bdc09ed989a887e4f3885b2c5d5c10b6c1330537';
+String _$productRepositoryHash() => r'e2d382f968e040e327af082a68f422bc834e4854';
 
 /// See also [productRepository].
 @ProviderFor(productRepository)

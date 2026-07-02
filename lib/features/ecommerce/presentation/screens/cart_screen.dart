@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/cart_provider.dart';
+import '../../../../core/widgets/error_view.dart';
+import '../../../../core/widgets/loading_view.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final cartState = ref.watch(cartControllerProvider);
     final totalAmount = ref.watch(cartTotalAmountProvider);
 
@@ -20,13 +24,13 @@ class CartScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Your bag', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text(l10n.yourBag, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: cartState.when(
         data: (items) {
           if (items.isEmpty) {
-            return const Center(child: Text('Your bag is empty.'));
+            return Center(child: Text(l10n.yourBag));
           }
           return Column(
             children: [
@@ -55,7 +59,7 @@ class CartScreen extends ConsumerWidget {
                             children: [
                               Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                               const SizedBox(height: 4),
-                              Text('Color: ${item.selectedColor} / Size: ${item.selectedSize}', style: const TextStyle(color: Colors.black54, fontSize: 12)),
+                              Text('${l10n.color}: ${item.selectedColor} / ${l10n.size}: ${item.selectedSize}', style: const TextStyle(color: Colors.black54, fontSize: 12)),
                               const SizedBox(height: 12),
                               Row(
                                 children: [
@@ -94,7 +98,7 @@ class CartScreen extends ConsumerWidget {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, -5),
                     ),
@@ -105,7 +109,7 @@ class CartScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Total', style: TextStyle(fontSize: 16, color: Colors.black54)),
+                        Text(l10n.total, style: const TextStyle(fontSize: 16, color: Colors.black54)),
                         Text('€ ${totalAmount.toStringAsFixed(2)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                       ],
                     ),
@@ -115,7 +119,7 @@ class CartScreen extends ConsumerWidget {
                       height: 56,
                       child: ElevatedButton(
                         onPressed: () => context.push('/checkout'),
-                        child: const Text('Checkout', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: Text(l10n.checkout, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
@@ -124,8 +128,12 @@ class CartScreen extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        loading: () => LoadingView(message: l10n.loading),
+        error: (err, stack) => ErrorView(
+          message: l10n.errorLoading,
+          retryLabel: l10n.retry,
+          onRetry: () => ref.invalidate(cartControllerProvider),
+        ),
       ),
     );
   }

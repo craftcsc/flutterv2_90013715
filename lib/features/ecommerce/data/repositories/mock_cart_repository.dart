@@ -5,7 +5,6 @@ import '../../domain/repositories/cart_repository.dart';
 part 'mock_cart_repository.g.dart';
 
 class MockCartRepository implements CartRepository {
-  // Manteniendo el carrito en memoria por ahora, como solicitó el usuario.
   final List<CartItem> _items = [];
 
   @override

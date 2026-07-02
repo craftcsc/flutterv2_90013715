@@ -1,0 +1,66 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'payment_models.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$TestCardImpl _$$TestCardImplFromJson(Map<String, dynamic> json) =>
+    _$TestCardImpl(
+      number: json['number'] as String,
+      holder: json['holder'] as String,
+      behavior: json['behavior'] as String,
+      availableFunds: (json['availableFunds'] as num?)?.toDouble(),
+      declineReason: json['declineReason'] as String?,
+    );
+
+Map<String, dynamic> _$$TestCardImplToJson(_$TestCardImpl instance) =>
+    <String, dynamic>{
+      'number': instance.number,
+      'holder': instance.holder,
+      'behavior': instance.behavior,
+      'availableFunds': instance.availableFunds,
+      'declineReason': instance.declineReason,
+    };
+
+_$PaymentRequestImpl _$$PaymentRequestImplFromJson(Map<String, dynamic> json) =>
+    _$PaymentRequestImpl(
+      amount: (json['amount'] as num).toDouble(),
+      cardNumber: json['cardNumber'] as String,
+      currency: json['currency'] as String? ?? 'USD',
+    );
+
+Map<String, dynamic> _$$PaymentRequestImplToJson(
+  _$PaymentRequestImpl instance,
+) => <String, dynamic>{
+  'amount': instance.amount,
+  'cardNumber': instance.cardNumber,
+  'currency': instance.currency,
+};
+
+_$PaymentResponseImpl _$$PaymentResponseImplFromJson(
+  Map<String, dynamic> json,
+) => _$PaymentResponseImpl(
+  success: json['success'] as bool,
+  status: json['status'] as String,
+  transactionId: json['transactionId'] as String?,
+  amount: (json['amount'] as num).toDouble(),
+  currency: json['currency'] as String,
+  cardLast4: json['cardLast4'] as String,
+  message: json['message'] as String,
+  timestamp: json['timestamp'] as String,
+);
+
+Map<String, dynamic> _$$PaymentResponseImplToJson(
+  _$PaymentResponseImpl instance,
+) => <String, dynamic>{
+  'success': instance.success,
+  'status': instance.status,
+  'transactionId': instance.transactionId,
+  'amount': instance.amount,
+  'currency': instance.currency,
+  'cardLast4': instance.cardLast4,
+  'message': instance.message,
+  'timestamp': instance.timestamp,
+};

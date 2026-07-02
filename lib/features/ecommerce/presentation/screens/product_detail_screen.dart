@@ -5,6 +5,9 @@ import 'package:uuid/uuid.dart';
 import '../../domain/entities/cart_item.dart';
 import '../../data/repositories/mock_product_repository.dart';
 import '../providers/cart_provider.dart';
+import '../../../../core/widgets/error_view.dart';
+import '../../../../core/widgets/loading_view.dart';
+import '../../../../l10n/app_localizations.dart';
 
 final productDetailProvider = FutureProvider.family((ref, String id) {
   final repo = ref.watch(productRepositoryProvider);
@@ -26,6 +29,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final productAsync = ref.watch(productDetailProvider(widget.productId));
 
     return Scaffold(
@@ -83,7 +87,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               style: TextStyle(color: Colors.black54, height: 1.5),
                             ),
                             const SizedBox(height: 24),
-                            const Text('Size', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            Text(l10n.size, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                             const SizedBox(height: 12),
                             Row(
                               children: product.availableSizes.map((size) {
@@ -109,7 +113,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                               }).toList(),
                             ),
                             const SizedBox(height: 24),
-                            const Text('Color', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            Text(l10n.color, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                             const SizedBox(height: 12),
                             Row(
                               children: product.availableColors.map((colorHex) {
@@ -161,15 +165,19 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                         SnackBar(content: Text('${product.name} added to bag!')),
                       );
                     },
-                    child: const Text('+ Add to bag', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: Text(l10n.addToBag, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ),
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        loading: () => LoadingView(message: l10n.loading),
+        error: (err, stack) => ErrorView(
+          message: l10n.errorLoading,
+          retryLabel: l10n.retry,
+          onRetry: () => ref.invalidate(productDetailProvider(widget.productId)),
+        ),
       ),
     );
   }

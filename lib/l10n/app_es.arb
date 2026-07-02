@@ -1,0 +1,108 @@
+{
+  "@@locale": "es",
+
+  "appTitle": "E-commerce Demo",
+  "@appTitle": { "description": "Título de la aplicación" },
+
+  "explore": "Explorar",
+  "@explore": { "description": "Etiqueta del tab Explorar" },
+
+  "categories": "Categorías",
+  "@categories": { "description": "Etiqueta del tab Categorías" },
+
+  "stores": "Tiendas",
+  "@stores": { "description": "Etiqueta del tab Tiendas" },
+
+  "profile": "Perfil",
+  "@profile": { "description": "Etiqueta del tab Perfil" },
+
+  "perfectForYou": "Perfecto para ti",
+  "@perfectForYou": { "description": "Sección de productos recomendados" },
+
+  "forThisSummer": "Para este verano",
+  "@forThisSummer": { "description": "Sección de productos de temporada" },
+
+  "seeMore": "Ver más",
+  "@seeMore": { "description": "Botón para ver más productos" },
+
+  "yourBag": "Tu bolsa",
+  "@yourBag": { "description": "Título de la pantalla del carrito" },
+
+  "checkout": "Ir al pago",
+  "@checkout": { "description": "Botón de checkout" },
+
+  "total": "Total",
+  "@total": { "description": "Etiqueta de total en el carrito" },
+
+  "addToBag": "Agregar a la bolsa",
+  "@addToBag": { "description": "Botón de agregar al carrito" },
+
+  "size": "Talla",
+  "@size": { "description": "Etiqueta de talla en detalle de producto" },
+
+  "color": "Color",
+  "@color": { "description": "Etiqueta de color en detalle de producto" },
+
+  "cancel": "Cancelar",
+  "@cancel": { "description": "Botón de cancelar" },
+
+  "processPayment": "Procesar pago",
+  "@processPayment": { "description": "Botón de procesar pago" },
+
+  "choosePaymentMethod": "Elige un método de pago",
+  "@choosePaymentMethod": { "description": "Título de sección de pago" },
+
+  "creditCard": "Tarjeta de crédito",
+  "@creditCard": { "description": "Opción de pago con tarjeta" },
+
+  "applePay": "Apple Pay",
+  "@applePay": { "description": "Opción de pago con Apple Pay" },
+
+  "addNewCard": "+ Agregar nueva tarjeta",
+  "@addNewCard": { "description": "Opción para agregar tarjeta nueva" },
+
+  "billingAddressSameAsShipping": "Mi dirección de facturación es la misma que la de envío",
+  "@billingAddressSameAsShipping": { "description": "Checkbox de dirección de facturación" },
+
+  "loading": "Cargando...",
+  "@loading": { "description": "Mensaje de estado de carga" },
+
+  "errorLoading": "Error al cargar",
+  "@errorLoading": { "description": "Mensaje de error genérico" },
+
+  "retry": "Reintentar",
+  "@retry": { "description": "Botón de reintentar" },
+
+  "onboardingTitle": "Crea un prototipo en minutos",
+  "@onboardingTitle": { "description": "Título de la pantalla de onboarding" },
+
+  "onboardingSubtitle": "Disfruta estos componentes listos para usar y preocúpate solo por crear el mejor producto.",
+  "@onboardingSubtitle": { "description": "Subtítulo de la pantalla de onboarding" },
+
+  "next": "Siguiente",
+  "@next": { "description": "Botón de avanzar en onboarding" },
+
+  "personaliseExperience": "Personaliza tu experiencia",
+  "@personaliseExperience": { "description": "Título del paso de intereses" },
+
+  "chooseInterests": "Elige tus intereses.",
+  "@chooseInterests": { "description": "Subtítulo del paso de intereses" },
+
+  "language": "Idioma",
+  "@language": { "description": "Etiqueta del selector de idioma" },
+
+  "spanish": "Español",
+  "@spanish": { "description": "Opción de idioma español" },
+
+  "english": "Inglés",
+  "@english": { "description": "Opción de idioma inglés" },
+
+  "shipping": "Envío",
+  "@shipping": { "description": "Paso de envío en checkout" },
+
+  "payment": "Pago",
+  "@payment": { "description": "Paso de pago en checkout" },
+
+  "bagStep": "Bolsa",
+  "@bagStep": { "description": "Paso de bolsa en checkout" }
+}

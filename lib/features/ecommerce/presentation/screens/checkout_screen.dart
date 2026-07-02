@@ -1,18 +1,85 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../providers/payment_provider.dart';
+import '../../../../core/widgets/loading_view.dart';
+import '../../../../l10n/app_localizations.dart';
 
-class CheckoutScreen extends StatefulWidget {
+class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
 
   @override
-  State<CheckoutScreen> createState() => _CheckoutScreenState();
+  ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
 }
 
-class _CheckoutScreenState extends State<CheckoutScreen> {
-  final int _currentStep = 2; // Payment step as per screenshot
+class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
+  final int _currentStep = 3; // Payment step
+
+  String? _selectedCardNumber;
+  final TextEditingController _amountController = TextEditingController(text: '150');
+  final TextEditingController _manualCardController = TextEditingController();
+  bool _isAddingManualCard = false;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _manualCardController.dispose();
+    super.dispose();
+  }
+
+  void _processPayment() async {
+    final l10n = AppLocalizations.of(context);
+    final amount = double.tryParse(_amountController.text) ?? 150.0;
+    final cardNumber = _isAddingManualCard ? _manualCardController.text : _selectedCardNumber;
+
+    if (cardNumber == null || cardNumber.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select or enter a card number.')),
+      );
+      return;
+    }
+
+    await ref.read(paymentProcessProvider.notifier).processPayment(amount, cardNumber);
+
+    if (!mounted) return;
+
+    final paymentState = ref.read(paymentProcessProvider);
+    paymentState.whenData((response) {
+      if (response != null) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(response.success ? 'Payment Approved' : 'Payment Declined'),
+            content: Text(response.message),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  context.pop();
+                  if (response.success) {
+                    context.go('/home');
+                  }
+                },
+                child: const Text('OK'),
+              )
+            ],
+          ),
+        );
+      }
+    });
+    
+    if (paymentState.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${l10n.errorLoading}: ${paymentState.error}')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final testCardsAsyncValue = ref.watch(testCardsProvider);
+    final paymentState = ref.watch(paymentProcessProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -20,9 +87,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         elevation: 0,
         leading: TextButton(
           onPressed: () => context.pop(),
-          child: const Text('Cancel', style: TextStyle(color: Color(0xFF007AFF))),
+          child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF007AFF))),
         ),
-        title: const Text('Checkout', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text(l10n.checkout, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: Column(
@@ -32,9 +99,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _StepIndicator(title: 'Your bag', step: 1, currentStep: _currentStep),
-                _StepIndicator(title: 'Shipping', step: 2, currentStep: _currentStep),
-                _StepIndicator(title: 'Payment', step: 3, currentStep: _currentStep),
+                _StepIndicator(title: l10n.bagStep, step: 1, currentStep: _currentStep),
+                _StepIndicator(title: l10n.shipping, step: 2, currentStep: _currentStep),
+                _StepIndicator(title: l10n.payment, step: 3, currentStep: _currentStep),
                 _StepIndicator(title: 'Review', step: 4, currentStep: _currentStep),
               ],
             ),
@@ -45,101 +112,156 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Choose a payment method', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text(l10n.choosePaymentMethod, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   const Text(
                     'You won\'t be charged until you review the order on the next page',
                     style: TextStyle(color: Colors.black54, height: 1.5),
                   ),
-                  const SizedBox(height: 32),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFFEEEEEE)),
-                      borderRadius: BorderRadius.circular(16),
+                  const SizedBox(height: 16),
+                  
+                  // Campo para probar distintos montos
+                  TextField(
+                    controller: _amountController,
+                    decoration: const InputDecoration(
+                      labelText: 'Amount (for testing purposes)',
+                      border: OutlineInputBorder(),
                     ),
-                    child: Column(
-                      children: [
-                        _PaymentMethodTile(
-                          title: 'Credit Card',
-                          isSelected: true,
-                          child: Column(
-                            children: [
-                              Container(
-                                margin: const EdgeInsets.only(top: 16),
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF8F9FA),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: const Color(0xFF007AFF)),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: const [
-                                        Text('Mastercard', style: TextStyle(fontWeight: FontWeight.bold)),
-                                        SizedBox(height: 4),
-                                        Text('xxxx xxxx xxxx 1234', style: TextStyle(color: Colors.black54)),
-                                      ],
-                                    ),
-                                    const Icon(Icons.check, color: Color(0xFF007AFF)),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 12),
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: const Color(0xFFEEEEEE)),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: const [
-                                        Text('Visa', style: TextStyle(fontWeight: FontWeight.bold)),
-                                        SizedBox(height: 4),
-                                        Text('xxxx xxxx xxxx 9876', style: TextStyle(color: Colors.black54)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              TextButton.icon(
-                                onPressed: () {},
-                                icon: const Icon(Icons.add, size: 16, color: Color(0xFF007AFF)),
-                                label: const Text('Add new card', style: TextStyle(color: Color(0xFF007AFF))),
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
+                    keyboardType: TextInputType.number,
+                  ),
+                  
+                  const SizedBox(height: 32),
+                  
+                  testCardsAsyncValue.when(
+                    data: (cards) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFFEEEEEE)),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: [
+                            _PaymentMethodTile(
+                              title: l10n.creditCard,
+                              isSelected: true,
+                              child: Column(
                                 children: [
-                                  Container(
-                                    width: 20,
-                                    height: 20,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF007AFF),
-                                      borderRadius: BorderRadius.circular(4),
+                                  // Generar lista de tarjetas
+                                  ...cards.map((card) {
+                                    final isSelected = !_isAddingManualCard && _selectedCardNumber == card.number;
+                                    return GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedCardNumber = card.number;
+                                          _isAddingManualCard = false;
+                                        });
+                                      },
+                                      child: Container(
+                                        margin: const EdgeInsets.only(top: 12),
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? const Color(0xFFF8F9FA) : Colors.white,
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(color: isSelected ? const Color(0xFF007AFF) : const Color(0xFFEEEEEE)),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(card.holder, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                                const SizedBox(height: 4),
+                                                Text('xxxx xxxx xxxx ${card.number.substring(card.number.length - 4)}', style: const TextStyle(color: Colors.black54)),
+                                              ],
+                                            ),
+                                            if (isSelected) const Icon(Icons.check, color: Color(0xFF007AFF)),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                  
+                                  const SizedBox(height: 16),
+                                  
+                                  // Botón y campo de tarjeta manual
+                                  if (!_isAddingManualCard)
+                                    TextButton.icon(
+                                      onPressed: () {
+                                        setState(() {
+                                          _isAddingManualCard = true;
+                                          _selectedCardNumber = null;
+                                        });
+                                      },
+                                      icon: const Icon(Icons.add, size: 16, color: Color(0xFF007AFF)),
+                                      label: Text(l10n.addNewCard, style: const TextStyle(color: Color(0xFF007AFF))),
                                     ),
-                                    child: const Icon(Icons.check, size: 14, color: Colors.white),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  const Expanded(
-                                    child: Text('My billing address is the same as my shipping address', style: TextStyle(color: Colors.black87, fontSize: 13)),
+                                    
+                                  if (_isAddingManualCard)
+                                    Container(
+                                      margin: const EdgeInsets.only(top: 12),
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF8F9FA),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: const Color(0xFF007AFF)),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text('New Card Number', style: TextStyle(fontWeight: FontWeight.bold)),
+                                          const SizedBox(height: 8),
+                                          TextField(
+                                            controller: _manualCardController,
+                                            decoration: const InputDecoration(
+                                              hintText: 'Enter 16-digit card number',
+                                              isDense: true,
+                                            ),
+                                            keyboardType: TextInputType.number,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Align(
+                                            alignment: Alignment.centerRight,
+                                            child: TextButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  _isAddingManualCard = false;
+                                                });
+                                              },
+                                              child: Text(l10n.cancel),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    
+                                  const SizedBox(height: 16),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 20,
+                                        height: 20,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF007AFF),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: const Icon(Icons.check, size: 14, color: Colors.white),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(l10n.billingAddressSameAsShipping, style: const TextStyle(color: Colors.black87, fontSize: 13)),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        const Divider(height: 1, color: Color(0xFFEEEEEE)),
-                        const _PaymentMethodTile(title: 'Apple Pay', isSelected: false),
-                      ],
-                    ),
+                      );
+                    },
+                    loading: () => LoadingView(message: l10n.loading),
+                    error: (e, st) => Text('${l10n.errorLoading}: $e'),
                   ),
                 ],
               ),
@@ -151,19 +273,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  // Finalizar flujo o siguiente paso
-                  showDialog(context: context, builder: (_) => AlertDialog(
-                    title: const Text('Order Placed!'),
-                    content: const Text('Your mock order was placed successfully.'),
-                    actions: [
-                      TextButton(onPressed: () {
-                        context.go('/home');
-                      }, child: const Text('Back to Home'))
-                    ],
-                  ));
-                },
-                child: const Text('Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                onPressed: paymentState.isLoading ? null : _processPayment,
+                child: paymentState.isLoading 
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : Text(l10n.processPayment, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
           ),

@@ -3,12 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/repositories/mock_product_repository.dart';
 import '../providers/cart_provider.dart';
+import '../../../../core/widgets/language_selector.dart';
+import '../../../../core/widgets/error_view.dart';
+import '../../../../core/widgets/loading_view.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../core/services/shared_preferences_service.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     // This could also be managed by a separate FutureProvider, but using the repository directly
     // in a FutureBuilder is fine for simple fetching if not sharing state.
     // However, Riverpod is requested, so let's make a quick provider for it.
@@ -23,8 +29,17 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('E-commerce', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text(l10n.appTitle, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.restart_alt, color: Colors.black),
+            tooltip: 'Reset Onboarding',
+            onPressed: () async {
+              await ref.read(sharedPreferencesServiceProvider).resetOnboarding();
+              if (context.mounted) context.go('/onboarding');
+            },
+          ),
+          const LanguageSelector(),
           IconButton(
             icon: const Icon(Icons.search, color: Colors.black),
             onPressed: () {},
@@ -82,10 +97,10 @@ class HomeScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Perfect for you', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(l10n.perfectForYou, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     TextButton(
                       onPressed: () {},
-                      child: const Text('See more', style: TextStyle(color: Color(0xFF007AFF))),
+                      child: Text(l10n.seeMore, style: const TextStyle(color: Color(0xFF007AFF))),
                     ),
                   ],
                 ),
@@ -129,19 +144,23 @@ class HomeScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+        loading: () => LoadingView(message: l10n.loading),
+        error: (err, stack) => ErrorView(
+          message: l10n.errorLoading,
+          retryLabel: l10n.retry,
+          onRetry: () => ref.invalidate(featuredProductsProvider),
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color(0xFF007AFF),
         unselectedItemColor: Colors.grey,
         currentIndex: 0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
-          BottomNavigationBarItem(icon: Icon(Icons.category_outlined), label: 'Categories'),
-          BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), label: 'Stores'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+        items: [
+          BottomNavigationBarItem(icon: const Icon(Icons.explore), label: l10n.explore),
+          BottomNavigationBarItem(icon: const Icon(Icons.category_outlined), label: l10n.categories),
+          BottomNavigationBarItem(icon: const Icon(Icons.storefront_outlined), label: l10n.stores),
+          BottomNavigationBarItem(icon: const Icon(Icons.person_outline), label: l10n.profile),
         ],
       ),
     );

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/onboarding_provider.dart';
 import '../../domain/entities/user_interest.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -17,6 +18,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -57,9 +60,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           }
                         }
                       },
-                      child: const Text(
-                        'Next',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      child: Text(
+                        l10n.next,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                     ),
                   );
@@ -78,6 +81,8 @@ class _IntroStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       children: [
         Expanded(
@@ -114,14 +119,14 @@ class _IntroStep extends StatelessWidget {
                   }),
                 ),
                 const SizedBox(height: 32),
-                const Text(
-                  'Create a prototype in just a few minutes',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black, height: 1.2),
+                Text(
+                  l10n.onboardingTitle,
+                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black, height: 1.2),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Enjoy these pre-made components and worry only about creating the best product ever.',
-                  style: TextStyle(fontSize: 16, color: Colors.black54, height: 1.5),
+                Text(
+                  l10n.onboardingSubtitle,
+                  style: const TextStyle(fontSize: 16, color: Colors.black54, height: 1.5),
                 ),
               ],
             ),
@@ -137,13 +142,13 @@ class _InterestsStep extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final selectedInterests = ref.watch(selectedInterestsProvider);
-    final allInterests = ref.read(selectedInterestsProvider.notifier).state; 
-    // Wait, the state doesn't have all interests. I should define a static list.
     final List<String> interestsList = [
       'User Interface', 'User Experience', 'User Research', 'UX Writing',
       'User Testing', 'Service Design', 'Strategy', 'Design Systems',
     ];
+
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -166,9 +171,9 @@ class _InterestsStep extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 40),
-          const Text('Personalise your experience', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black)),
+          Text(l10n.personaliseExperience, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black)),
           const SizedBox(height: 8),
-          const Text('Choose your interests.', style: TextStyle(fontSize: 16, color: Colors.black54)),
+          Text(l10n.chooseInterests, style: const TextStyle(fontSize: 16, color: Colors.black54)),
           const SizedBox(height: 32),
           Expanded(
             child: ListView.separated(

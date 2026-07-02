@@ -19,7 +19,7 @@ final selectedInterestsProvider =
 
 typedef _$SelectedInterests = AutoDisposeNotifier<Set<UserInterest>>;
 String _$onboardingControllerHash() =>
-    r'd433531d3b63b6ad3f3d84288e57c18a4060f3bb';
+    r'30be34d06923877aff63ad4a5141f47ebdb0c187';
 
 /// See also [OnboardingController].
 @ProviderFor(OnboardingController)

@@ -1,0 +1,14 @@
+{
+  "Simulator Target Bundle": "com.example.flutterv290013715",
+  "aps": {
+    "alert": {
+      "title": "🔥 Firebase FCM Push Notification",
+      "body": "¡Esta es una notificación PUSH real enviada al sistema iOS de tu simulador!"
+    },
+    "badge": 1,
+    "sound": "default"
+  },
+  "custom_data": {
+    "user_id": "test_user_123"
+  }
+}

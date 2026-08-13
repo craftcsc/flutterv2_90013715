@@ -7,7 +7,9 @@ import '../../../../core/widgets/language_selector.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/loading_view.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../core/services/shared_preferences_service.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+
+import '../../../../core/services/fcm_service.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -15,14 +17,12 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    // This could also be managed by a separate FutureProvider, but using the repository directly
-    // in a FutureBuilder is fine for simple fetching if not sharing state.
-    // However, Riverpod is requested, so let's make a quick provider for it.
     final productsAsync = ref.watch(featuredProductsProvider);
     final cartItemsCount = ref.watch(cartControllerProvider).maybeWhen(
       data: (items) => items.length,
       orElse: () => 0,
     );
+    final currentUser = ref.watch(authStateProvider).asData?.value;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -32,22 +32,38 @@ class HomeScreen extends ConsumerWidget {
         title: Text(l10n.appTitle, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.restart_alt, color: Colors.black),
-            tooltip: 'Reset Onboarding',
+            icon: const Icon(Icons.notifications_active_outlined, color: Colors.black),
+            tooltip: 'Probar Notificación Push FCM',
             onPressed: () async {
-              await ref.read(sharedPreferencesServiceProvider).resetOnboarding();
-              if (context.mounted) context.go('/onboarding');
+              await FCMService().showTestNotification();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(Icons.notifications_active, color: Colors.white),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            '🔔 Notificación Push (Firebase FCM)\n¡Has recibido una notificación push de prueba!',
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Color(0xFF007AFF),
+                    duration: Duration(seconds: 4),
+                  ),
+                );
+              }
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.history, color: Colors.black),
+            tooltip: 'Historial de Transacciones',
+            onPressed: () => context.push('/transactions'),
+          ),
           const LanguageSelector(),
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.black),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.favorite_border, color: Colors.black),
-            onPressed: () {},
-          ),
           Stack(
             alignment: Alignment.center,
             children: [
@@ -73,6 +89,26 @@ class HomeScreen extends ConsumerWidget {
                 ),
             ],
           ),
+          if (currentUser != null) ...[
+            IconButton(
+              icon: const Icon(Icons.logout, color: Colors.redAccent),
+              tooltip: 'Cerrar Sesión (${currentUser.email})',
+              onPressed: () async {
+                await ref.read(authControllerProvider.notifier).signOut();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Sesión cerrada correctamente.')),
+                  );
+                }
+              },
+            ),
+          ] else ...[
+            IconButton(
+              icon: const Icon(Icons.login, color: Color(0xFF007AFF)),
+              tooltip: 'Iniciar Sesión',
+              onPressed: () => context.push('/login'),
+            ),
+          ],
         ],
       ),
       body: productsAsync.when(

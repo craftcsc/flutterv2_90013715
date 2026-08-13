@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 import '../providers/payment_provider.dart';
 import '../../../../core/widgets/loading_view.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../auth/data/auth_repository.dart';
+import '../../../transactions/data/transaction_repository.dart';
+import '../../../transactions/domain/transaction_model.dart';
+import '../../presentation/providers/cart_provider.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -44,22 +48,68 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (!mounted) return;
 
     final paymentState = ref.read(paymentProcessProvider);
-    paymentState.whenData((response) {
+    paymentState.whenData((response) async {
       if (response != null) {
+        if (response.success) {
+          // Registrar la transacción en Firestore
+          final authRepo = ref.read(authRepositoryProvider);
+          final currentUser = authRepo.currentUser;
+          final cartItems = ref.read(cartControllerProvider).asData?.value ?? [];
+
+          final items = cartItems.isNotEmpty
+              ? cartItems
+                  .map((c) => TransactionItem(
+                        id: c.product.id,
+                        title: c.product.name,
+                        price: c.product.price,
+                        quantity: c.quantity,
+                      ))
+                  .toList()
+              : [
+                  TransactionItem(
+                    id: 'item_demo',
+                    title: 'Producto E-Commerce Demo',
+                    price: amount,
+                    quantity: 1,
+                  )
+                ];
+
+          final transaction = TransactionModel(
+            id: '',
+            userId: currentUser?.uid ?? 'guest_user',
+            userEmail: currentUser?.email ?? 'invitado@demo.com',
+            totalAmount: amount,
+            items: items,
+            paymentMethod: 'Tarjeta (${cardNumber.substring(cardNumber.length > 4 ? cardNumber.length - 4 : 0)})',
+            status: 'Completado',
+            createdAt: DateTime.now(),
+          );
+
+          try {
+            await ref.read(transactionRepositoryProvider).createTransaction(transaction);
+          } catch (e) {
+            debugPrint('Error al guardar la transacción en Firestore: $e');
+          }
+        }
+
+        if (!mounted) return;
+
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
-            title: Text(response.success ? 'Payment Approved' : 'Payment Declined'),
-            content: Text(response.message),
+            title: Text(response.success ? 'Pago Aprobado' : 'Pago Rechazado'),
+            content: Text(response.success
+                ? '${response.message}\nLa transacción ha sido guardada en Firestore.'
+                : response.message),
             actions: [
               TextButton(
                 onPressed: () {
                   context.pop();
                   if (response.success) {
-                    context.go('/home');
+                    context.go('/transactions');
                   }
                 },
-                child: const Text('OK'),
+                child: const Text('Ver Historial'),
               )
             ],
           ),

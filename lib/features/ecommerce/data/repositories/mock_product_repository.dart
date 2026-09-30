@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../../../core/services/shared_preferences_service.dart';
+import 'firestore_product_repository.dart';
 
 part 'mock_product_repository.g.dart';
 
@@ -60,11 +61,26 @@ class MockProductRepository implements ProductRepository {
   Future<List<Product>> getProductsByCategory(String category) async {
     return getFeaturedProducts();
   }
+
+  @override
+  Stream<List<Product>> watchProducts() async* {
+    yield await getFeaturedProducts();
+  }
+
+  @override
+  Future<void> createProduct(Product product) async {}
+
+  @override
+  Future<void> updateProduct(Product product) async {}
+
+  @override
+  Future<void> deleteProduct(String id) async {}
 }
 
 @riverpod
 ProductRepository productRepository(ProductRepositoryRef ref) {
-  final prefs = ref.watch(sharedPreferencesServiceProvider);
-  return MockProductRepository(prefs);
+  // Conectar con Firestore para soporte de tiempo real y CRUD
+  return FirestoreProductRepository();
 }
+
 

@@ -17,6 +17,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _registerAsAdmin = false;
 
   @override
   void dispose() {
@@ -33,7 +34,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final success = await authController.signUp(
       _emailController.text.trim(),
       _passwordController.text.trim(),
+      role: _registerAsAdmin ? 'admin' : 'client',
     );
+
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -81,7 +84,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -211,9 +214,35 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       return null;
                     },
                   ),
+                  const SizedBox(height: 16),
+
+                  // Opción de registro como Administrador
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: CheckboxListTile(
+                      value: _registerAsAdmin,
+                      onChanged: (val) => setState(() => _registerAsAdmin = val ?? false),
+                      title: const Text(
+                        'Registrar como Administrador',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: const Text(
+                        'Habilita acceso al panel de gestión y ventas en vivo',
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      ),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      activeColor: Theme.of(context).colorScheme.primary,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
+                  ),
                   const SizedBox(height: 24),
 
                   // Botón Registrarse
+
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(

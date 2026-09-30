@@ -41,9 +41,26 @@ class TransactionRepository {
 
     final querySnapshot = await query.get();
 
-    final transactions = querySnapshot.docs
+    List<TransactionModel> transactions = querySnapshot.docs
         .map((doc) => TransactionModel.fromFirestore(doc))
         .toList();
+
+    // Respaldo de conveniencia: Si la subcolección de transacciones está vacía en la página inicial,
+    // buscamos ventas en la colección global 'sales' asociadas a este usuario
+    if (transactions.isEmpty && lastDocument == null) {
+      try {
+        final salesSnapshot = await _firestore
+            .collection('sales')
+            .where('userId', isEqualTo: userId)
+            .get();
+        if (salesSnapshot.docs.isNotEmpty) {
+          transactions = salesSnapshot.docs
+              .map((doc) => TransactionModel.fromFirestore(doc))
+              .toList();
+          transactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        }
+      } catch (_) {}
+    }
 
     final DocumentSnapshot? newLastDocument =
         querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null;

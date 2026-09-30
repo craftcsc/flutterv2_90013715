@@ -1,30 +1,60 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:flutterv2_90013715/main.dart';
+import 'package:flutterv2_90013715/features/ecommerce/domain/entities/product.dart';
+import 'package:flutterv2_90013715/features/ecommerce/domain/entities/payment_models.dart';
+import 'package:flutterv2_90013715/features/transactions/domain/transaction_model.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('E-Commerce Domain Unit Tests', () {
+    test('Product model serialization and deserialization', () {
+      final product = Product(
+        id: 'p1',
+        name: 'Camisa Test',
+        price: 25.5,
+        imageUrl: 'https://example.com/img.jpg',
+        availableSizes: ['S', 'M'],
+        availableColors: ['0xFF000000'],
+      );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      final json = product.toJson();
+      expect(json['name'], 'Camisa Test');
+      expect(json['price'], 25.5);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      final fromJson = Product.fromJson(json);
+      expect(fromJson.id, product.id);
+      expect(fromJson.name, product.name);
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    test('PaymentRequest model generates valid payload for teacher service', () {
+      const req = PaymentRequest(
+        amount: 150.0,
+        cardNumber: '4111111111111111',
+        currency: 'USD',
+      );
+
+      final json = req.toJson();
+      expect(json['amount'], 150.0);
+      expect(json['cardNumber'], '4111111111111111');
+      expect(json['currency'], 'USD');
+    });
+
+    test('TransactionModel calculates items properly', () {
+      final tx = TransactionModel(
+        id: 'tx_123',
+        userId: 'user_abc',
+        userEmail: 'test@correo.com',
+        totalAmount: 100.0,
+        items: [
+          TransactionItem(id: 'i1', title: 'Item 1', price: 50.0, quantity: 2),
+        ],
+        paymentMethod: 'Tarjeta (1111)',
+        status: 'Completado',
+        createdAt: DateTime(2026, 1, 1),
+      );
+
+      final firestoreMap = tx.toFirestore();
+      expect(firestoreMap['userId'], 'user_abc');
+      expect(firestoreMap['totalAmount'], 100.0);
+      expect(firestoreMap['items'], hasLength(1));
+    });
   });
 }

@@ -38,7 +38,17 @@ class CartController extends _$CartController {
       return repository.getCartItems();
     });
   }
+
+  Future<void> clearCart() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(cartRepositoryProvider);
+      await repository.clearCart();
+      return repository.getCartItems();
+    });
+  }
 }
+
 
 @riverpod
 double cartTotalAmount(CartTotalAmountRef ref) {

@@ -12,6 +12,7 @@ import '../../features/ecommerce/presentation/screens/product_detail_screen.dart
 import '../../features/ecommerce/presentation/screens/cart_screen.dart';
 import '../../features/ecommerce/presentation/screens/checkout_screen.dart';
 import '../../features/transactions/presentation/screens/transactions_history_screen.dart';
+import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -79,6 +80,11 @@ GoRouter appRouter(AppRouterRef ref) {
         path: '/transactions',
         builder: (context, state) => const TransactionsHistoryScreen(),
       ),
+      GoRoute(
+        path: '/admin',
+        builder: (context, state) => const AdminDashboardScreen(),
+      ),
     ],
   );
 }
+

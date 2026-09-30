@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/repositories/mock_product_repository.dart';
+import '../../domain/entities/product.dart';
 import '../providers/cart_provider.dart';
+
 import '../../../../core/widgets/language_selector.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/loading_view.dart';
@@ -59,11 +61,28 @@ class HomeScreen extends ConsumerWidget {
             },
           ),
           IconButton(
+            icon: Icon(
+              Icons.admin_panel_settings,
+              color: ref.watch(isAdminProvider) ? const Color(0xFF007AFF) : Colors.black87,
+            ),
+            tooltip: 'Panel de Administrador (Ventas & CRUD)',
+            onPressed: () async {
+              await context.push('/admin');
+              ref.invalidate(featuredProductsProvider);
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.black87),
+            tooltip: 'Actualizar catálogo',
+            onPressed: () => ref.invalidate(featuredProductsProvider),
+          ),
+          IconButton(
             icon: const Icon(Icons.history, color: Colors.black),
             tooltip: 'Historial de Transacciones',
             onPressed: () => context.push('/transactions'),
           ),
           const LanguageSelector(),
+
           Stack(
             alignment: Alignment.center,
             children: [
@@ -113,74 +132,193 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: productsAsync.when(
         data: (products) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  height: 200,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE9F2FF),
-                    borderRadius: BorderRadius.circular(16),
-                    image: const DecorationImage(
-                      image: NetworkImage('https://picsum.photos/800/600?random=2'),
-                      fit: BoxFit.cover,
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(featuredProductsProvider);
+              await ref.read(featuredProductsProvider.future);
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 180,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE9F2FF),
+                      borderRadius: BorderRadius.circular(16),
+                      image: const DecorationImage(
+                        image: NetworkImage('https://picsum.photos/800/600?random=2'),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(l10n.perfectForYou, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    TextButton(
-                      onPressed: () {},
-                      child: Text(l10n.seeMore, style: const TextStyle(color: Color(0xFF007AFF))),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(l10n.perfectForYou, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      TextButton(
+                        onPressed: () {},
+                        child: Text(l10n.seeMore, style: const TextStyle(color: Color(0xFF007AFF))),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 230,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: products.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 14),
+                      itemBuilder: (context, index) {
+                        final product = products[index];
+                        return GestureDetector(
+                          onTap: () => context.push('/product/${product.id}'),
+                          child: SizedBox(
+                            width: 150,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    height: 150,
+                                    width: 150,
+                                    color: const Color(0xFFF0F4F8),
+                                    child: Image.network(
+                                      product.imageUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => const Center(
+                                        child: Icon(Icons.image_not_supported, color: Colors.grey, size: 36),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  product.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '€ ${product.price.toStringAsFixed(2)}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF007AFF)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  height: 220,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
+                  ),
+                  const SizedBox(height: 28),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Todos los Productos',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE9F2FF),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${products.length} disponibles',
+                          style: const TextStyle(
+                            color: Color(0xFF007AFF),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 14,
+                      mainAxisSpacing: 14,
+                      childAspectRatio: 0.72,
+                    ),
                     itemCount: products.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 16),
                     itemBuilder: (context, index) {
                       final product = products[index];
                       return GestureDetector(
                         onTap: () => context.push('/product/${product.id}'),
-                        child: SizedBox(
-                          width: 150,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade200),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.02),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                height: 150,
-                                width: 150,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF0F4F8),
-                                  borderRadius: BorderRadius.circular(12),
-                                  image: DecorationImage(
-                                    image: NetworkImage(product.imageUrl),
-                                    fit: BoxFit.cover,
+                              Expanded(
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                                  child: Container(
+                                    width: double.infinity,
+                                    color: const Color(0xFFF0F4F8),
+                                    child: Image.network(
+                                      product.imageUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => const Center(
+                                        child: Icon(Icons.image_not_supported, color: Colors.grey, size: 36),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w500)),
-                              const SizedBox(height: 4),
-                              Text('€ ${product.price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                              Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      product.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '€ ${product.price.toStringAsFixed(2)}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF007AFF),
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       );
                     },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
@@ -207,8 +345,9 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-// Simple provider for fetching products
-final featuredProductsProvider = FutureProvider((ref) {
+// Real-time Stream provider for products
+final featuredProductsProvider = StreamProvider<List<Product>>((ref) {
   final repo = ref.watch(productRepositoryProvider);
-  return repo.getFeaturedProducts();
+  return repo.watchProducts();
 });
+

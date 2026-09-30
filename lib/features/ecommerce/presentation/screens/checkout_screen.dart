@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:go_router/go_router.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../providers/payment_provider.dart';
 import '../../../../core/widgets/loading_view.dart';
+import '../../../../core/services/fcm_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/data/auth_repository.dart';
 import '../../../transactions/data/transaction_repository.dart';
 import '../../../transactions/domain/transaction_model.dart';
 import '../../presentation/providers/cart_provider.dart';
+
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -51,7 +58,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     paymentState.whenData((response) async {
       if (response != null) {
         if (response.success) {
-          // Registrar la transacción en Firestore
+          // Registrar la transacción en Firestore para el usuario y en la colección global de ventas
           final authRepo = ref.read(authRepositoryProvider);
           final currentUser = authRepo.currentUser;
           final cartItems = ref.read(cartControllerProvider).asData?.value ?? [];
@@ -74,6 +81,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   )
                 ];
 
+          final fcmToken = FCMService().fcmToken;
           final transaction = TransactionModel(
             id: '',
             userId: currentUser?.uid ?? 'guest_user',
@@ -85,11 +93,58 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             createdAt: DateTime.now(),
           );
 
+          // 1. Guardar en historial de usuario: users/{userId}/transactions
           try {
             await ref.read(transactionRepositoryProvider).createTransaction(transaction);
           } catch (e) {
             debugPrint('Error al guardar la transacción en Firestore: $e');
           }
+
+          // 2. Guardar en colección global 'sales' (para vista en tiempo real del admin)
+          try {
+            final saleData = transaction.toFirestore();
+            saleData['fcmToken'] = fcmToken;
+            await FirebaseFirestore.instance.collection('sales').add(saleData);
+          } catch (e) {
+            debugPrint('Error al guardar venta en colección global sales: $e');
+          }
+
+          // 3. Notificar vía Backend en Python (FastAPI / Firebase Functions)
+          try {
+            final isAndroid = defaultTargetPlatform == TargetPlatform.android;
+            final backendHost = isAndroid ? '10.0.2.2' : '127.0.0.1';
+            await http.post(
+
+              Uri.parse('http://$backendHost:8000/api/sales/process-and-notify'),
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'user_id': currentUser?.uid ?? 'guest_user',
+                'user_email': currentUser?.email ?? 'invitado@demo.com',
+                'total_amount': amount,
+                'payment_method': transaction.paymentMethod,
+                'status': 'Completado',
+                'fcm_token': fcmToken,
+                'items': items.map((i) => {
+                  'id': i.id,
+                  'title': i.title,
+                  'price': i.price,
+                  'quantity': i.quantity,
+                }).toList(),
+              }),
+            ).timeout(const Duration(seconds: 2));
+          } catch (e) {
+            debugPrint('Aviso: Backend en Python en espera o local: $e');
+          }
+
+          // 4. Disparar Notificación Push inmediata en el dispositivo
+          await FCMService().showPurchaseNotification(
+            amount: amount,
+            orderId: transaction.id,
+          );
+
+
+          // 5. Vaciar carrito de compras
+          ref.read(cartControllerProvider.notifier).clearCart();
         }
 
         if (!mounted) return;
@@ -97,9 +152,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
-            title: Text(response.success ? 'Pago Aprobado' : 'Pago Rechazado'),
+            title: Row(
+              children: [
+                Icon(
+                  response.success ? Icons.check_circle : Icons.cancel,
+                  color: response.success ? Colors.green : Colors.red,
+                ),
+                const SizedBox(width: 8),
+                Text(response.success ? '¡Compra Exitosa!' : 'Pago Rechazado'),
+              ],
+            ),
             content: Text(response.success
-                ? '${response.message}\nLa transacción ha sido guardada en Firestore.'
+                ? '${response.message}\n\n• Venta registrada en Firestore (En tiempo real para Administrador).\n• Notificación Push de venta enviada vía Firebase.\n• Carrito limpiado.'
                 : response.message),
             actions: [
               TextButton(
@@ -110,7 +174,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   }
                 },
                 child: const Text('Ver Historial'),
-              )
+              ),
+              if (response.success)
+                ElevatedButton(
+                  onPressed: () {
+                    context.pop();
+                    context.go('/home');
+                  },
+                  child: const Text('Seguir Comprando'),
+                ),
             ],
           ),
         );

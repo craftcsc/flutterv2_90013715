@@ -31,6 +31,13 @@ class FCMService {
       provisional: false,
     );
 
+    // Habilitar visualización de banner y sonido en iOS cuando la app está en primer plano (Foreground)
+    await _messaging.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
     if (kDebugMode) {
       print('FCM Permission Status: ${settings.authorizationStatus}');
     }
@@ -42,6 +49,11 @@ class FCMService {
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
+      defaultPresentAlert: true,
+      defaultPresentBadge: true,
+      defaultPresentSound: true,
+      defaultPresentBanner: true,
+      defaultPresentList: true,
     );
 
     const InitializationSettings initSettings = InitializationSettings(
@@ -60,6 +72,7 @@ class FCMService {
           badge: true,
           sound: true,
         );
+
 
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'high_importance_channel',
@@ -134,7 +147,10 @@ class FCMService {
               presentAlert: true,
               presentBadge: true,
               presentSound: true,
+              presentBanner: true,
+              presentList: true,
             ),
+
           ),
         );
       }
@@ -164,6 +180,8 @@ class FCMService {
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      presentBanner: true,
+      presentList: true,
     );
     const NotificationDetails details = NotificationDetails(
       android: androidDetails,
@@ -179,4 +197,39 @@ class FCMService {
       details,
     );
   }
+
+  /// Dispara la notificación push de compra confirmada con monto y detalles
+  Future<void> showPurchaseNotification({
+    required double amount,
+    String? orderId,
+  }) async {
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'high_importance_channel',
+      'Notificaciones Importantes',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      presentBanner: true,
+      presentList: true,
+    );
+
+    const NotificationDetails details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    await _localNotifications.show(
+      id,
+      '🛍️ ¡Compra Confirmada!',
+      'Tu pedido por \$${amount.toStringAsFixed(2)} ha sido procesado con éxito. ¡Gracias por tu compra!',
+      details,
+    );
+  }
 }
+

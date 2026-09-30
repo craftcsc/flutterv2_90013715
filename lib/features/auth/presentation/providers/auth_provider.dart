@@ -8,6 +8,23 @@ final authStateProvider = StreamProvider<User?>((ref) {
   return authRepository.authStateChanges;
 });
 
+/// Provider que escucha el rol del usuario autenticado en Firestore
+final currentUserRoleProvider = StreamProvider<String>((ref) {
+  final authState = ref.watch(authStateProvider);
+  final user = authState.asData?.value;
+  if (user == null) {
+    return Stream.value('client');
+  }
+  final authRepo = ref.watch(authRepositoryProvider);
+  return authRepo.watchUserRole(user.uid);
+});
+
+/// Provider booleano que indica si el usuario actual tiene permisos de Administrador
+final isAdminProvider = Provider<bool>((ref) {
+  final role = ref.watch(currentUserRoleProvider).asData?.value ?? 'client';
+  return role == 'admin';
+});
+
 /// Provider controlador para operaciones de Auth (Login, Register, Logout)
 final authControllerProvider =
     StateNotifierProvider<AuthController, AsyncValue<void>>((ref) {
@@ -34,12 +51,13 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  Future<bool> signUp(String email, String password) async {
+  Future<bool> signUp(String email, String password, {String role = 'client'}) async {
     state = const AsyncLoading();
     try {
       await _authRepository.signUpWithEmailAndPassword(
         email: email,
         password: password,
+        role: role,
       );
       state = const AsyncData(null);
       return true;
@@ -47,6 +65,12 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       state = AsyncError(e.toString(), stackTrace);
       return false;
     }
+  }
+
+  Future<void> toggleAdminRole(String uid, bool makeAdmin) async {
+    try {
+      await _authRepository.setUserRole(uid, makeAdmin ? 'admin' : 'client');
+    } catch (_) {}
   }
 
   Future<void> signOut() async {

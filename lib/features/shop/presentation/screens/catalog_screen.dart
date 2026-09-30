@@ -126,11 +126,12 @@ class CatalogScreen extends ConsumerWidget {
               width: 8,
               height: 8,
               decoration: BoxDecoration(
-                color: index == 0 ? const Color(0xFF007AFF) : const Color(0xFFE0E0E0),
+                color: index == currentIndex ? const Color(0xFF007AFF) : const Color(0xFFE0E0E0),
                 shape: BoxShape.circle,
               ),
             );
           }),
+
         ),
       ],
     );
